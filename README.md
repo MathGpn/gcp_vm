@@ -8,6 +8,11 @@ chmod +x deploy.sh
 
 ./deploy.sh
 
+=> installation de docker...
+
+IP externe de la VM (ajouter http:// et le :port 8501 ou 8000) : 34.163.135.95
+
+
 # test en local du docker compose :
 
 - http://localhost:8501
@@ -241,12 +246,15 @@ Public project to be hosted on a GCP Virtual Machine.
 - Accessible via ssh
 - Ports 8000, 8501 et 5432 ouverts dans le firewall
 
-OS : Ubuntu 24.04
-Disk size :
-CPU :
-RAM CPU : 
+Catégorie : E2 (e2-standard-8)
+OS : Ubuntu 24.04 LTS Minimal (x64)
+Disk size : 30Go (persistant)
+CPU : 8vCPU (4 coeurs)
+RAM CPU : 32Go
 GPU : X
 RAM GPU : X
+
+Autorisation du traffic HTTP
 
 
 ## Building images & pushing them to Google Artifact Registry 
@@ -256,7 +264,12 @@ RAM GPU : X
 
 ## Once connected to the VM itself 
 
-1) git clone
+0) gcloud command ou ouvrir dans une fenêtre via SSH
+sudo apt update
+sudo apt install git -y
+
+1) git clone https://github.com/MathGpn/gcp_vm.git
+2) ./deploy.sh
 2) docker compose up --build
 
 
