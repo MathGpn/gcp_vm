@@ -1,16 +1,18 @@
 FROM python:3.12-slim
 
-# Définir le répertoire de travail
-WORKDIR /app
+# install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copier les fichiers de requirements
-COPY requirements.txt .
+WORKDIR /app/backend
 
-# Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Copier les fichiers nécessaires à l'installation des dépendances
+COPY pyproject.toml uv.lock ./
+
+# Installer les dépendances avec uv (inclut maintenant redis)
+RUN uv pip install --system --requirements=pyproject.toml
 
 # Copier le code de l'application
-COPY . .
+COPY backend/ .
 
 # Exposer le port 8000
 EXPOSE 8000

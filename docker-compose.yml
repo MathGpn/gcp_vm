@@ -19,7 +19,9 @@ services:
       - app_network
 
   backend:
-    build: ./backend
+    build:
+      context: .  # Utiliser la racine comme contexte
+      dockerfile: backend/Dockerfile
     container_name: fastapi_backend
     ports:
       - "8000:8000"
@@ -38,7 +40,9 @@ services:
       - app_network
 
   frontend:
-    build: ./frontend
+    build:
+      context: .  # Utiliser la racine comme contexte  
+      dockerfile: frontend/Dockerfile
     container_name: streamlit_frontend
     ports:
       - "8501:8501"

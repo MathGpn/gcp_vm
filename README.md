@@ -235,6 +235,12 @@ En cas de problème :
 # gcp_vm
 Public project to be hosted on a GCP Virtual Machine.
 
+1) uv venv --python 3.12.3
+2) .venv\Scripts\activate
+3) uv init
+4) uv add ...
+5) uv sync
+
 ## Stack 
 
 - Python 3.12
