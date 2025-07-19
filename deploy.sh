@@ -61,6 +61,12 @@ sudo docker-compose logs --tail=20 backend
 echo "📝 Derniers logs du frontend:"
 sudo docker-compose logs --tail=20 frontend
 
+echo "📝 Derniers logs de la base de données:"
+sudo docker-compose logs --tail=20 db
+
+echo "📝 Derniers logs de pgAdmin:"
+sudo docker-compose logs --tail=20 pgadmin
+
 # Test de connectivité
 echo "🧪 Test de connectivité..."
 
@@ -79,17 +85,33 @@ else
     echo "❌ Frontend non accessible"
 fi
 
+# Test pgAdmin
+if curl -f http://localhost:5050 &> /dev/null; then
+    echo "✅ pgAdmin accessible sur http://localhost:5050"
+else
+    echo "❌ pgAdmin non accessible"
+fi
+
+# Test PostgreSQL (connexion interne)
+if sudo docker-compose exec -T db pg_isready -U postgres &> /dev/null; then
+    echo "✅ Base de données PostgreSQL opérationnelle"
+else
+    echo "❌ Base de données PostgreSQL non accessible"
+fi
+
 # Configuration du firewall (optionnel)
 echo "🔥 Configuration du firewall..."
 sudo ufw allow 8000/tcp comment 'FastAPI Backend'
 sudo ufw allow 8501/tcp comment 'Streamlit Frontend'
 sudo ufw allow 5432/tcp comment 'PostgreSQL Database'
+sudo ufw allow 5050/tcp comment 'pgAdmin Interface'
 
 echo ""
 echo "🎉 Déploiement terminé!"
 echo "📱 Frontend Streamlit: http://$(curl -s ifconfig.me):8501"
 echo "🔗 API FastAPI: http://$(curl -s ifconfig.me):8000"
 echo "📚 Documentation API: http://$(curl -s ifconfig.me):8000/docs"
+echo "🗃️  pgAdmin Interface: http://$(curl -s ifconfig.me):5050"
 echo ""
 echo "Pour voir les logs en temps réel:"
 echo "sudo docker-compose logs -f"

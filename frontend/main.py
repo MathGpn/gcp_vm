@@ -15,6 +15,14 @@ st.set_page_config(
 # URL de l'API (utilise une variable d'environnement ou localhost par défaut)
 API_BASE_URL = os.getenv("API_URL", "http://localhost:8000")
 
+# Initialiser le session state
+if 'items_cache' not in st.session_state:
+    st.session_state.items_cache = []
+if 'last_update' not in st.session_state:
+    st.session_state.last_update = datetime.now()
+if 'force_refresh' not in st.session_state:
+    st.session_state.force_refresh = True
+
 def check_api_health():
     """Vérifier si l'API est accessible"""
     try:
@@ -36,6 +44,16 @@ def get_items():
         st.error(f"Erreur de connexion à l'API: {str(e)}")
         return []
 
+def get_items_cached():
+    """Récupérer les items avec cache"""
+    # Rafraîchir seulement si nécessaire
+    if st.session_state.force_refresh:
+        st.session_state.items_cache = get_items()
+        st.session_state.last_update = datetime.now()
+        st.session_state.force_refresh = False
+    
+    return st.session_state.items_cache
+
 def create_item(name, description, price):
     """Créer un nouvel item"""
     try:
@@ -46,6 +64,8 @@ def create_item(name, description, price):
         }
         response = requests.post(f"{API_BASE_URL}/items", json=data)
         if response.status_code == 200:
+            # Forcer le refresh du cache au prochain appel
+            st.session_state.force_refresh = True
             return True, response.json()
         else:
             return False, f"Erreur {response.status_code}: {response.text}"
@@ -56,7 +76,11 @@ def delete_item(item_id):
     """Supprimer un item"""
     try:
         response = requests.delete(f"{API_BASE_URL}/items/{item_id}")
-        return response.status_code == 200
+        if response.status_code == 200:
+            # Forcer le refresh du cache au prochain appel
+            st.session_state.force_refresh = True
+            return True
+        return False
     except requests.exceptions.RequestException:
         return False
 
@@ -65,18 +89,24 @@ def main():
     st.title("🚀 Mon Application Streamlit + FastAPI")
     st.markdown("---")
     
-    # Vérification de l'état de l'API
+    # Vérification de l'état de l'API (seulement au premier chargement)
     col1, col2 = st.columns([3, 1])
     with col1:
         st.subheader("Tableau de bord")
     
     with col2:
-        api_status = check_api_health()
-        if api_status:
+        # Cache le statut de l'API pour éviter les appels répétés
+        if 'api_status' not in st.session_state:
+            st.session_state.api_status = check_api_health()
+        
+        if st.session_state.api_status:
             st.success("🟢 API Connectée")
         else:
             st.error("🔴 API Déconnectée")
             st.warning(f"Vérifiez que l'API est accessible sur {API_BASE_URL}")
+            if st.button("🔄 Tester la connexion"):
+                st.session_state.api_status = check_api_health()
+                st.rerun()
             return
     
     # Sidebar pour les actions
@@ -97,28 +127,26 @@ def main():
                         success, result = create_item(name, description, price)
                         if success:
                             st.success("✅ Item créé avec succès!")
-                            st.rerun()  # Rafraîchir la page
+                            # Pas de st.rerun() - le cache sera rafraîchi automatiquement
                         else:
                             st.error(f"❌ Erreur: {result}")
                     else:
                         st.error("Veuillez remplir tous les champs obligatoires")
         
-        # Bouton de rafraîchissement
+        # Bouton de rafraîchissement manuel
         if st.button("🔄 Rafraîchir les données", use_container_width=True):
+            st.session_state.force_refresh = True
+            st.session_state.api_status = check_api_health()
             st.rerun()
+        
+        # Afficher la dernière mise à jour
+        st.caption(f"Dernière mise à jour: {st.session_state.last_update.strftime('%H:%M:%S')}")
     
-    # Contenu principal
-    items = get_items()
+    # Contenu principal - utiliser le cache
+    items = get_items_cached()
     
     if items:
         st.subheader(f"📦 Liste des produits ({len(items)} items)")
-        
-        # Convertir en DataFrame pour l'affichage
-        df = pd.DataFrame(items)
-        
-        # Reformater les colonnes pour l'affichage
-        if 'created_at' in df.columns:
-            df['created_at'] = pd.to_datetime(df['created_at']).dt.strftime('%d/%m/%Y %H:%M')
         
         # Affichage en colonnes
         for idx, item in enumerate(items):
@@ -142,7 +170,7 @@ def main():
                     if st.button("🗑️", key=f"delete_{item['id']}", help="Supprimer cet item"):
                         if delete_item(item['id']):
                             st.success("Item supprimé!")
-                            st.rerun()
+                            st.rerun()  # Ici c'est OK car c'est une action ponctuelle
                         else:
                             st.error("Erreur lors de la suppression")
                 

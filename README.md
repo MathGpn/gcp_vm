@@ -16,7 +16,9 @@ IP externe de la VM (ajouter http:// et le :port 8501 ou 8000) : 34.163.135.95
 # test en local du docker compose :
 
 - http://localhost:8501
-- http://localhost:8000
+- http://localhost:8000 (/docs)
+- http://localhost:5050 (admin@admin.com / admin => db, 5432, user, password, appdb)
+
 
 ## 🏗️ Architecture
 
