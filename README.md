@@ -17,6 +17,10 @@ CPU :
 GPU :
 
 
+## Building images & pushing them to Google Artifact Registry 
+
+
+
 
 ## Once connected to the VM itself 
 
