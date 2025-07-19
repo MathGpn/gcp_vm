@@ -9,6 +9,15 @@ Public project to be hosted on a GCP Virtual Machine.
 - Google Cloud Platform (Compute Engine)
 - Github
 
+## VM parameters
+
+OS :
+Disk size :
+CPU :
+GPU :
+
+
+
 ## Once connected to the VM itself 
 
 1) git clone
