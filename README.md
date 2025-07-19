@@ -237,8 +237,12 @@ Public project to be hosted on a GCP Virtual Machine.
 
 ## Stack 
 
+- Python 3.12
+- Shell script for cloud deployment
+- uv
 - FastAPI
 - Streamlit
+- Postgresql (+ pgadmin)
 - Docker
 - Google Cloud Platform (Compute Engine)
 - Github
